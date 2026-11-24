@@ -107,6 +107,10 @@ def parse_feed(raw, hot):
                 d["temp"] = num(ch.text)
             elif t == "content" and ch.get("url"):
                 d["img"] = ch.get("url")
+        m = re.match(r"\s*(-?\d{1,5})\s*°\s*[-–]\s*", d.get("title", ""))
+        if m:
+            d["temp"] = float(m.group(1))
+            d["title"] = d["title"][m.end():]
         if d.get("title") and d.get("link"):
             out.append(d)
     return out
