@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Black-Friday-Sucher</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+:root{color-scheme:light dark;
+--bg:light-dark(#EEF4FC,#0E1726);--card:light-dark(#FFFFFF,#16233A);--soft:light-dark(#E2ECF8,#1E2F4C);
+--ink:light-dark(#0F1B2E,#E8F0FB);--muted:light-dark(#4B5A70,#A9B9D0);--line:light-dark(#D6E4F7,#2A3E60);
+--acc:light-dark(#1D4ED8,#7EA8FF);--onacc:light-dark(#FFFFFF,#0E1726);
+--g:light-dark(#C9F2D6,#1F4A31);--gi:light-dark(#14532D,#BDF2CF);--y:light-dark(#FCEBB6,#4D3D10);--yi:light-dark(#713F12,#FBE3A0);
+--r:light-dark(#FAD4D0,#4A1D1A);--ri:light-dark(#7A1C14,#FFC9C2)}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "DM Sans",system-ui,sans-serif;overflow-x:clip}
+.wrap{max-width:1100px;margin:0 auto;padding:20px max(4vw,14px) 60px;display:flex;flex-direction:column;gap:14px}
+h1{margin:0;font-size:clamp(26px,5vw,36px);line-height:1.1}
+.sub{margin:4px 0 0;color:var(--muted);font-size:14px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{min-height:44px;padding:0 14px;border-radius:22px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-family:inherit;font-size:15px;font-weight:500;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--acc);border-color:var(--acc);color:var(--onacc)}
+input[type=search],select{min-height:44px;font-family:inherit;font-size:16px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:0 12px}
+input[type=search]{flex:1 1 220px}
+select{flex:0 1 auto}
+.panel{background:var(--card);border-radius:20px;padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.slider{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.slider input{flex:1 1 180px;accent-color:var(--acc);min-height:44px}
+.slider b{min-width:3.5em;color:var(--acc)}
+.meta{font-size:13px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:12px}
+.deal{background:var(--card);border-radius:20px;padding:12px;display:flex;flex-direction:column;gap:6px;position:relative}
+.img{aspect-ratio:4/3;border-radius:14px;background:var(--soft);overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px}
+.img img{width:100%;height:100%;object-fit:contain;background:#fff}
+.badge{align-self:flex-start;font-size:12px;font-weight:700;padding:3px 10px;border-radius:10px}
+.b-gruen{background:var(--g);color:var(--gi)}.b-gelb{background:var(--y);color:var(--yi)}.b-rot{background:var(--r);color:var(--ri)}
+.b-claude{background:var(--acc);color:var(--onacc)}
+.name{font-weight:700;font-size:15px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.price{font-size:24px;font-weight:700;color:var(--acc);white-space:nowrap}
+.row{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:auto}
+.go{flex:1;min-height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;background:var(--acc);color:var(--onacc);font-weight:700;text-decoration:none}
+.heart{width:44px;height:44px;border-radius:22px;border:1px solid var(--line);background:var(--card);color:var(--acc);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.heart[aria-pressed=true] svg{fill:currentColor}
+.empty{grid-column:1/-1;text-align:center;padding:30px 16px;color:var(--muted)}
+.status{font-size:13px;color:var(--muted)}
+.warn{color:light-dark(#9A3412,#FDBA74)}
+:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Black-Friday-Sucher</h1>
+    <p class="sub">Neue Deals von mydealz alle 15 Minuten, bewertet nach Preisverlauf statt UVP.</p>
+  </header>
+
+  <div class="bar" role="tablist" aria-label="Ansicht">
+    <button class="chip" data-view="alle" aria-pressed="true">Alle Deals</button>
+    <button class="chip" data-view="claude" aria-pressed="false">Von Claude geprüft</button>
+    <button class="chip" data-view="merk" aria-pressed="false">Gemerkt <span id="nMerk"></span></button>
+  </div>
+
+  <section class="panel" aria-label="Filter">
+    <div class="bar">
+      <input type="search" id="q" placeholder="Suchen, z. B. Fire TV, Asics …" aria-label="Suche">
+      <select id="shop" aria-label="Shop"><option value="">Alle Shops</option></select>
+      <select id="cat" aria-label="Kategorie"><option value="">Alle Kategorien</option></select>
+      <select id="time" aria-label="Zeitraum">
+        <option value="24">Letzte 24 Std.</option><option value="72">Letzte 3 Tage</option><option value="168" selected>Letzte 7 Tage</option>
+      </select>
+    </div>
+    <div class="bar" aria-label="Ampel">
+      <button class="chip" data-amp="gruen" aria-pressed="true">Grün</button>
+      <button class="chip" data-amp="gelb" aria-pressed="true">Gelb</button>
+      <button class="chip" data-amp="rot" aria-pressed="false">Rot zeigen</button>
+    </div>
+    <div class="bar" id="people" aria-label="Für wen"></div>
+    <div class="slider">
+      <label for="min">Mindest-Rabatt gegen Preisvergleich</label>
+      <input type="range" id="min" min="0" max="80" step="5" value="0">
+      <b id="minV">0 %</b>
+    </div>
+    <p class="meta" style="margin:0">Der Rabatt zählt nur gegen den Preisvergleich aus dem Deal-Post, nie gegen die UVP. Deals ohne Preisvergleich fallen raus, sobald der Regler über 0 % steht.</p>
+  </section>
+
+  <div class="bar" style="justify-content:space-between">
+    <span id="count" class="status"></span>
+    <span id="status" class="status">Lädt …</span>
+  </div>
+  <main class="grid" id="grid" aria-live="polite"></main>
+  <p class="meta">Daten: mydealz (Community-Deals). Preise können sich jederzeit ändern. Vor dem Kauf kurz den Preisverlauf auf idealo prüfen.</p>
+</div>
+
+<script>
+{
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const safeUrl=u=>/^https:\/\//.test(u||"")?u:"";
+const eur=n=>typeof n==="number"&&isFinite(n)?n.toLocaleString("de-DE",{minimumFractionDigits:n%1?2:0,maximumFractionDigits:2})+" €":"";
+const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+const LABEL={gruen:"Grün",gelb:"Gelb",rot:"Rot"};
+const HEART='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6C19 16.5 12 21 12 21z"/></svg>';
+
+let deals=[],claude=[],profiles=[],updated=null,errors=[];
+let st=store.get("bfs-state",{view:"alle",amp:{gruen:true,gelb:true,rot:false},person:"",min:0,time:"168",shop:"",cat:"",q:""});
+let merk=store.get("bfs-merk",{});
+
+function save(){store.set("bfs-state",st)}
+function ago(iso){
+  const m=Math.round((Date.now()-new Date(iso))/60000);
+  if(!isFinite(m))return "";
+  if(m<60)return `vor ${Math.max(m,1)} Min.`;
+  if(m<1440)return `vor ${Math.round(m/60)} Std.`;
+  return new Date(iso).toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit"});
+}
+function matchesPerson(d,p){
+  const hay=((d.title||"")+" "+(d.cats||[]).join(" ")).toLowerCase();
+  const hit=(p.keywords||[]).some(w=>w&&hay.includes(String(w).toLowerCase()));
+  const okB=p.budget==null||typeof d.price!=="number"||d.price<=p.budget;
+  return hit&&okB;
+}
+function list(){
+  if(st.view==="merk")return Object.values(merk).sort((a,b)=>(b._saved||"").localeCompare(a._saved||""));
+  const src=st.view==="claude"?claude:deals;
+  const since=Date.now()-Number(st.time)*3600e3;
+  const q=st.q.trim().toLowerCase();
+  const p=profiles.find(x=>x.name===st.person);
+  return src.filter(d=>{
+    if(!st.amp[d.ampel])return false;
+    if(new Date(d.date||d.first)<since)return false;
+    if(st.shop&&d.shop!==st.shop)return false;
+    if(st.cat&&!(d.cats||[]).includes(st.cat))return false;
+    if(st.min>0&&!((d.discount||0)>=st.min))return false;
+    if(q&&!(d.title||"").toLowerCase().includes(q))return false;
+    if(p&&!matchesPerson(d,p))return false;
+    return true;
+  });
+}
+function card(d){
+  const url=safeUrl(d.link),img=safeUrl(d.img),on=!!merk[d.id];
+  const amp=d.ampel in LABEL?d.ampel:"gelb";
+  return `<article class="deal">
+    <div class="img">${img?`<img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer">`:"Kein Bild"}</div>
+    <div class="bar" style="gap:6px">
+      <span class="badge b-${amp}">${LABEL[amp]}</span>
+      ${d.byClaude?`<span class="badge b-claude">Von Claude geprüft</span>`:""}
+      ${d.hot?`<span class="badge" style="background:var(--soft)">Heiß</span>`:""}
+    </div>
+    <span class="name">${esc(d.title)}</span>
+    <span><span class="price">${eur(d.price)}</span>${d.discount>0?` <span class="meta">−${esc(d.discount)} % ggü. Preisvergleich</span>`:""}</span>
+    <span class="meta">${d.pvg?`Preisvergleich ${eur(d.pvg)} · `:""}${d.low6m?`6-Monats-Tief ${eur(d.low6m)} · `:""}${esc(d.shop||"Shop unbekannt")}</span>
+    <span class="meta">${esc(d.why||"")}</span>
+    <span class="meta">${esc(ago(d.date||d.first))}</span>
+    <div class="row">
+      ${url?`<a class="go" href="${esc(url)}" target="_blank" rel="noopener">Zum Deal</a>`:`<span class="meta">Kein Link</span>`}
+      <button class="heart" data-id="${esc(d.id)}" aria-pressed="${on}" aria-label="${on?"Nicht mehr merken":"Merken"}">${HEART}</button>
+    </div>
+  </article>`;
+}
+function fillSelect(el,values,cur,all){
+  el.innerHTML=`<option value="">${all}</option>`+values.map(v=>`<option${v===cur?" selected":""}>${esc(v)}</option>`).join("");
+}
+function render(){
+  document.querySelectorAll("[data-view]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.view===st.view));
+  document.querySelectorAll("[data-amp]").forEach(b=>b.setAttribute("aria-pressed",!!st.amp[b.dataset.amp]));
+  $("people").innerHTML=`<button class="chip" data-p="" aria-pressed="${!st.person}">Für alle</button>`+
+    profiles.map(p=>`<button class="chip" data-p="${esc(p.name)}" aria-pressed="${st.person===p.name}">Für ${esc(p.name)}</button>`).join("");
+  $("people").querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{st.person=b.dataset.p;save();render()});
+  const src=st.view==="claude"?claude:deals;
+  fillSelect($("shop"),[...new Set(src.map(d=>d.shop).filter(Boolean))].sort(),st.shop,"Alle Shops");
+  fillSelect($("cat"),[...new Set(src.flatMap(d=>d.cats||[]))].sort(),st.cat,"Alle Kategorien");
+  $("min").value=st.min;$("minV").textContent=st.min+" %";$("time").value=st.time;
+  if($("q").value!==st.q)$("q").value=st.q;
+  $("nMerk").textContent=Object.keys(merk).length?`(${Object.keys(merk).length})`:"";
+  const L=list();
+  $("count").textContent=st.view==="merk"?`${L.length} gemerkt`:`${L.length} / ${src.length} Deals`;
+  $("grid").innerHTML=L.length?L.slice(0,300).map(card).join(""):
+    `<div class="empty">${st.view==="merk"?"Noch nichts gemerkt. Tippe auf das Herz bei einem Deal.":st.view==="claude"?"Noch keine von Claude geprüften Deals. Die kommen einmal am Tag dazu.":src.length?"Keine Deals für diese Filter. Lockere den Mindest-Rabatt oder den Zeitraum.":"Noch keine Deals. Der Motor läuft alle 15 Minuten."}</div>`;
+  $("grid").querySelectorAll(".heart").forEach(b=>b.onclick=()=>{
+    const id=b.dataset.id;
+    if(merk[id])delete merk[id];
+    else{const d=[...deals,...claude].find(x=>x.id===id);if(d)merk[id]={...d,_saved:new Date().toISOString()}}
+    store.set("bfs-merk",merk);render();
+  });
+}
+document.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>{st.view=b.dataset.view;save();render()});
+document.querySelectorAll("[data-amp]").forEach(b=>b.onclick=()=>{st.amp[b.dataset.amp]=!st.amp[b.dataset.amp];save();render()});
+$("min").oninput=e=>{st.min=Number(e.target.value);save();render()};
+$("time").onchange=e=>{st.time=e.target.value;save();render()};
+$("shop").onchange=e=>{st.shop=e.target.value;save();render()};
+$("cat").onchange=e=>{st.cat=e.target.value;save();render()};
+let qt;$("q").oninput=e=>{clearTimeout(qt);qt=setTimeout(()=>{st.q=e.target.value;save();render()},200)};
+
+async function getJson(f){const r=await fetch(f+"?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw new Error(f+": "+r.status);return r.json()}
+async function load(){
+  try{
+    const [a,b,c]=await Promise.allSettled([getJson("deals.json"),getJson("claude-deals.json"),getJson("profiles.json")]);
+    if(a.status==="fulfilled"){deals=Array.isArray(a.value.deals)?a.value.deals:[];updated=a.value.updated;errors=a.value.errors||[]}
+    if(b.status==="fulfilled")claude=(Array.isArray(b.value.deals)?b.value.deals:[]).map(d=>({...d,byClaude:true}));
+    if(c.status==="fulfilled")profiles=Array.isArray(c.value.profiles)?c.value.profiles:[];
+    const stale=updated&&Date.now()-new Date(updated)>45*60e3;
+    $("status").textContent=updated?`Aktualisiert ${ago(updated)}${errors.length?" · "+errors.length+" Feed-Fehler":""}`:"Der Motor hat noch nicht geliefert";
+    $("status").classList.toggle("warn",!!stale||errors.length>0);
+    if(a.status==="rejected")$("status").textContent="Deals konnten nicht geladen werden";
+  }catch(e){$("status").textContent="Laden fehlgeschlagen"}
+  render();
+}
+load();
+setInterval(()=>{if(!document.hidden)load()},120000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)load()});
+}
+</script>
+</body>
+</html>

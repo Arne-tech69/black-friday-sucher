@@ -1,0 +1,11 @@
+{
+  "note": "Stichworte pro Person fuer Filter und Handy-Alarm. Die Fragen dazu stehen in der Claude-App.",
+  "profiles": [
+    {
+      "name": "Ich",
+      "budget": 50,
+      "cats": ["Tech", "Gaming", "Outdoor", "Mode"],
+      "keywords": ["mini pc", "mini-pc", "raspberry", "fire tv", "tv stick", "tv-stick", "tv box", "tv-box", "google tv", "chromecast", "fernseher", "asics", "nike", "ralph lauren"]
+    }
+  ]
+}
